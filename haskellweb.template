@@ -1,0 +1,119 @@
+{
+  "Resources": {
+    "sampleEnvironment": {
+      "Properties": {
+        "VersionLabel": {
+          "Ref": "sampleApplicationVersion"
+        },
+        "TemplateName": {
+          "Ref": "sampleConfigurationTemplate"
+        },
+        "Description": "Production",
+        "ApplicationName": {
+          "Ref": "haskellweb"
+        }
+      },
+      "Type": "AWS::ElasticBeanstalk::Environment"
+    },
+    "sampleConfigurationTemplate": {
+      "Properties": {
+        "SolutionStackName": "64bit Amazon Linux running PHP 5.3",
+        "OptionSettings": [
+          {
+            "Namespace": "aws:elasticbeanstalk:environment",
+            "OptionName": "EnvironmentType",
+            "Value": "SingleInstance"
+          },
+          {
+            "Namespace": "aws:autoscaling:launchconfiguration",
+            "OptionName": "IamInstanceProfile",
+            "Value": { "Ref" : "instanceProfile" }
+          }
+        ],
+        "Description": "AWS ElasticBeanstalk Sample Configuration Template",
+        "ApplicationName": {
+          "Ref": "haskellweb"
+        }
+      },
+      "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate"
+    },
+    "sampleApplicationVersion": {
+      "Properties": {
+        "SourceBundle": {
+          "S3Key": "package-0.1.zip",
+          "S3Bucket": "andrewbrownepackages"
+        },
+        "Description": "Sample haskell web version",
+        "ApplicationName": {
+          "Ref": "haskellweb"
+        }
+      },
+      "Type": "AWS::ElasticBeanstalk::ApplicationVersion"
+    },
+    "instanceProfile": {
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "instanceRole"
+          }
+        ],
+        "Path": "\/"
+      },
+      "Type": "AWS::IAM::InstanceProfile"
+    },
+    "instanceRole": {
+      "Properties": {
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Resource": "*",
+                  "Action": [
+                    "ecs:StartTask",
+                    "ecs:StopTask",
+                    "ecs:RegisterContainerInstance",
+                    "ecs:DeregisterContainerInstance",
+                    "ecs:DescribeContainerInstances",
+                    "ecs:DiscoverPollEndpoint",
+                    "ecs:Submit*",
+                    "ecs:Poll",
+                    "autoscaling:*"
+                  ],
+                  "Effect": "Allow"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "Beanstalk"
+          }
+        ],
+        "Path": "\/",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Effect": "Allow"
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "haskellweb": {
+      "Properties": {
+        "Description": "Sample haskell web application"
+      },
+      "Type": "AWS::ElasticBeanstalk::Application"
+    }
+  },
+  "AWSTemplateFormatVersion": "2010-09-09"
+}
